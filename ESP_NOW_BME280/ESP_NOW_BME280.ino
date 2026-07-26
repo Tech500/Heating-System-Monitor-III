@@ -4,9 +4,9 @@
   hub via ESP-NOW -> sleeps.
   July 26, 2026
 
-  New direction for project; now using CAD detection of LoRa preamble to awaken deep sleeping BME280
-  ESP-NOW node to send BME280 readings back to Receiver node.  Advantage of CAD is a much lower current
-  requirement than radio.startAutoDutyCycle().  Deep Sleep current 21.26 µA 99,9%of the time spent in 
+  New direction for project; now using CAD detection of LoRa preamble to awaken deep sleeping 
+  ESP-NOW BME280 node to send BME280 readings back to hub node.  Advantage of CAD is a much lower current
+  requirement than radio.startAutoDutyCycle().  Deep Sleep current 21.26 µA; 99.9 %of the time is spent in 
   deep sleep.
 */
 
