@@ -1,6 +1,6 @@
 /* Heating System Monitor IV
    ESP_NOW_Receiver.ino with temperature Offset + LoRa WOR trigger
-   July 29, 2026 (LoRa merge)
+   July 19, 2026 (LoRa merge)
    ESP32-NOW, ESP32 Core 3.3.10
    Hub now runs on EoRa-S3-900TB (ESP32-S3 + onboard SX1262) -- same board
    family as the outside sensor node.
@@ -79,14 +79,14 @@ SX1262 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUS
 
 #define WRITE_LED_PIN 23  //LittleFS Status LED  ON = Writing
 
-const char* ssid = "R2D2";
-const char* password = "Sky7388500";
+const char* ssid = "ssid";
+const char* password = "password";
 
 //Flag to prevent reset
 bool powerOnReset = false;
 
 // ─── GOOGLE DEPLOYMENT ID ────────────────────────────────────────────────────
-const String googleDeploymentID = "AKfycbz24Axc5Tcs4_bB6IWtMaCKp9BX6nsoZ11kprcCppLtSDnbyhW7F2MVX6roMZduF3x5sg";
+const String googleDeploymentID = "Removed for security";
 const String googleURL          = "https://script.google.com/macros/s/" + googleDeploymentID + "/exec";
 
 // ─────────────────────────────────────────────
@@ -114,13 +114,12 @@ BME280I2C bmeInside;
 // always-on DevKit node. RE-CALIBRATE after EoRa deep-sleep
 // migration -- self-heating term will largely disappear.
 // ─────────────────────────────────────────────
-const float BME280_OUTSIDE_TEMP_CAL_OFFSET_F = -.43;
 
 // ─────────────────────────────────────────────
 // BME280 (Inside) Temperature Calibration
 // Offset applied to BME280 (inside) temperature output
 // ─────────────────────────────────────────────
-const float BME280_INSIDE_TEMP_CAL_OFFSET_F = -7.11;
+const float BME280_INSIDE_TEMP_CAL_OFFSET_F = + .90;
 
 // ─── NTP / Time ──────────────────────────────────────────────────────────────
 const char* udpAddress1 = "pool.ntp.org";
@@ -374,6 +373,8 @@ void readBME280Inside(float &tempF, float &humidity, float &pressureHPa) {
   BME280::TempUnit tempUnit(BME280::TempUnit_Fahrenheit);
   BME280::PresUnit presUnit(BME280::PresUnit_hPa);
 
+  delay(500);
+
   bmeInside.read(pres, temp, hum, tempUnit, presUnit);
 
   if (isnan(temp) || isnan(pres)) {
@@ -383,8 +384,6 @@ void readBME280Inside(float &tempF, float &humidity, float &pressureHPa) {
     pressureHPa = NAN;
     return;
   }
-
-  temp += BME280_INSIDE_TEMP_CAL_OFFSET_F;
 
   tempF       = temp;
   humidity    = hum;
@@ -416,7 +415,7 @@ String urlEncode(String str) {
 
 // ─── Packet Processing Pipeline ──────────────────────────────────────────────
 void processIncomingPacket(const uint8_t *data, int len) {
-  Serial.printf(">>> processIncomingPacket: len=%d  type=%d  sizeof(BlowerData)=%d\n",
+  Serial.printf("\n>>> processIncomingPacket: len=%d  type=%d  sizeof(BlowerData)=%d\n",
                 len, data[0], sizeof(BlowerData));
   if (len < 1) return;
 
@@ -488,7 +487,7 @@ void processIncomingPacket(const uint8_t *data, int len) {
         memcpy(&bmePacket, data, sizeof(BME280Data));
         globalHumidity = bmePacket.humidity;
         globalPressure = bmePacket.pressure;
-        globalTemp     = bmePacket.temperature + BME280_OUTSIDE_TEMP_CAL_OFFSET_F;
+        globalTemp     = bmePacket.temperature;
 
         Serial.printf("\n[Radio Link] BME280 Update -> Temp: %.2f F  Hum: %.1f%%  Pres: %.4f inHg\n",
                       globalTemp, globalHumidity, globalPressure * 0.02953);
