@@ -56,7 +56,7 @@ int symbols = 512;
 #define RADIO_RST_PIN 8
 #define BOARD_LED 37
 
-#define WAKE_PIN GPIO_NUM_15  // Inverted DIO1 signal for RTC wake-up
+#define WAKE_PIN GPIO_NUM_15  // GPIO33 DIO1 signal rerouted to GPIO15 for RTC wake-up
 
 #define LED_ON HIGH
 #define LED_OFF LOW
