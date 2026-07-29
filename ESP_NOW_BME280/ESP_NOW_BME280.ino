@@ -56,13 +56,13 @@ int symbols = 512;
 #define RADIO_RST_PIN 8
 #define BOARD_LED 37
 
-#define WAKE_PIN GPIO_NUM_15  // GPIO33 DIO1 signal rerouted to GPIO15 for RTC wake-up
+#define WAKE_PIN GPIO_NUM_15  // Inverted DIO1 signal for RTC wake-up
 
 #define LED_ON HIGH
 #define LED_OFF LOW
 
-const char *ssid = "R2D2";
-const char *password = "Sky7388500";
+const char *ssid = "ssid";
+const char *password = "password";
 
 #define USING_SX1262_868M
 #if defined(USING_SX1262_868M)
@@ -84,7 +84,7 @@ SX1262 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUS
 
 BME280I2C bme;  // default constructor uses address 0x76
 
-const float BME280_OUTSIDE_TEMP_CAL_OFFSET_F = 0;
+const float BME280_OUTSIDE_TEMP_CAL_OFFSET_F = + 5.54;
 
 // ─── ESP-NOW: send reading to hub ────────────────────────────────────────────
 enum MessageType : uint8_t {
@@ -224,10 +224,12 @@ bool readAndSendBME280() {
   float tempF = NAN, humidity = NAN, pressureHPa = NAN;
   BME280::TempUnit tempUnit(BME280::TempUnit_Fahrenheit);
   BME280::PresUnit presUnit(BME280::PresUnit_hPa);
+
+  delay(500);
   
   bme.read(pressureHPa, tempF, humidity, tempUnit, presUnit);
 
-  delay(300);
+  tempF += BME280_OUTSIDE_TEMP_CAL_OFFSET_F;
 
   if (isnan(tempF) || isnan(pressureHPa)) {
     Serial.println("Error reading BME280 telemetry.");
@@ -257,8 +259,6 @@ bool readAndSendBME280() {
 
   WiFi.mode(WIFI_OFF);  // done -- tear WiFi back down before deep sleep
 
-  Wire.end();
-  
   return sent;
 }
 
@@ -271,6 +271,7 @@ bool readAndSendBME280() {
 
 void setup() {
   Serial.begin(115200);
+  while(!Serial){};
   delay(200);
   Serial.println("*** REACHED SETUP ***");
   Serial.flush();
@@ -318,9 +319,10 @@ void setup() {
     Serial.println("Receiver MAC: " + WiFi.macAddress());
     Serial.printf("WiFi Channel: %d\n", WiFi.channel());
 
-    readAndSendBME280();
+    delay(500);
 
-    radio.sleep();  // cleanly end LoRa side
+    readAndSendBME280();  //Ends WiFi when finished
+
     goToSleep();    // re-arms LoRa duty cycle receive, then deep sleeps
     return;
   }
