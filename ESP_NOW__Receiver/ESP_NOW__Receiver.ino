@@ -79,14 +79,14 @@ SX1262 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUS
 
 #define WRITE_LED_PIN 23  //LittleFS Status LED  ON = Writing
 
-const char* ssid = "SSID";
-const char* password = "PASSWORD";
+const char* ssid = "R2D2";
+const char* password = "Sky7388500";
 
 //Flag to prevent reset
 bool powerOnReset = false;
 
 // ─── GOOGLE DEPLOYMENT ID ────────────────────────────────────────────────────
-const String googleDeploymentID = "Removed for security";
+const String googleDeploymentID = "AKfycbz24Axc5Tcs4_bB6IWtMaCKp9BX6nsoZ11kprcCppLtSDnbyhW7F2MVX6roMZduF3x5sg";
 const String googleURL          = "https://script.google.com/macros/s/" + googleDeploymentID + "/exec";
 
 // ─────────────────────────────────────────────
@@ -302,7 +302,7 @@ void setupLoRa() {
   int state = radio.begin(
     radioFreq, 500.0, 7, 7,
     RADIOLIB_SX126X_SYNC_WORD_PRIVATE,
-    2, 512, 0.0, true
+    8, 512, 0.0, true
   );
   if (state == RADIOLIB_ERR_NONE) {
     Serial.println(F("success!"));
@@ -311,7 +311,7 @@ void setupLoRa() {
     Serial.println(state);
   }
 
-  radio.sleep();  // idle here between events -- hub is mains-powered so
+  radio.standby();  // idle here between events -- hub is mains-powered so
                    // this isn't about battery life, just a clean resting
                    // state; SPI wakes it automatically on the next call.
 }
@@ -321,23 +321,13 @@ void setupLoRa() {
 // sensor reply still comes back over ESP-NOW (MSG_BME280), unchanged.
 void sendOutsideWakeRequest() {
   Serial.println("[LoRa] Waking radio and sending WOR to outside BME280 node...");
-
-  pinMode(RADIO_BUSY_PIN, INPUT);
-  Serial.printf("[LoRa] BUSY before standby: %d\n", digitalRead(RADIO_BUSY_PIN));
-  int standbyState = radio.standby();
-  Serial.printf("[LoRa] BUSY after standby: %d\n", digitalRead(RADIO_BUSY_PIN));
-  if (standbyState != RADIOLIB_ERR_NONE) {
-    Serial.printf("[LoRa] standby() failed, code %d\n", standbyState);
-  }
-
   int state = radio.transmit("WOR");
   if (state == RADIOLIB_ERR_NONE) {
     Serial.println("[LoRa] WOR sent OK");
   } else {
     Serial.printf("[LoRa] WOR send failed, code %d\n", state);
   }
-
-  radio.sleep();  // back to idle -- no LoRa listening needed on this node
+  radio.standby();  // back to idle -- no LoRa listening needed on this node
 }
 
 // ─── NTP Init ────────────────────────────────────────────────────────────────
