@@ -23,7 +23,7 @@ Captured during `radio.startReceiveDutyCycleAuto()`:
 - RX window opens  
 - Radio returns to sleep  
 
-![Auto RX Window](images/ppk2 Observations-02.png)
+[Auto RX Window](https://github.com/Tech500/Heating-System-Monitor-IV/blob/main/IMAGES/PPK2%20Observation-02.png)
 
 ---
 
@@ -36,7 +36,7 @@ A complete scheduled receive cycle:
 - SX1262 performs RX window  
 - Node returns to baseline  
 
-![Duty Cycle Sequence](images/ppk2 Observations-03.png)
+[Duty Cycle Sequence](https://github.com/Tech500/Heating-System-Monitor-IV/blob/main/IMAGES/PPK2%20Observation-03.png)
 
 ---
 
@@ -52,7 +52,7 @@ This is the node’s full active period:
 Peak ≈ 98 mA  
 Average ≈ 25–26 mA  
 
-![Full Wake Cycle](images/ppk2 Observations-04.png)
+[Full Wake Cycle](https://github.com/Tech500/Heating-System-Monitor-IV/blob/main/IMAGES/PPK2%20Observation-04.png)
 
 ---
 
