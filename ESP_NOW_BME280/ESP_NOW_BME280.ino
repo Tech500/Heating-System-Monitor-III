@@ -1,7 +1,9 @@
 /*
   EoRa Pi--Outside BME280 Sensor Node
   Wakes on incoming LoRa WOR from hub -> reads BME280 -> sends reading to
-  hub via ESP-NOW -> sleeps.  July 29, 2026
+  hub via ESP-NOW -> sleeps.  
+  ESP32-NOW, ESP32 Core 3.3.10
+  July 29, 2026
 
   CYCLE:
     1. Deep sleep, LoRa radio armed in startReceiveDutyCycleAuto() (SX1262
