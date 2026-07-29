@@ -1,6 +1,6 @@
 /* Heating System Monitor IV
    ESP_NOW_Receiver.ino with temperature Offset + LoRa WOR trigger
-   July 19, 2026 (LoRa merge)
+   July 29, 2026 (LoRa merge)
    ESP32-NOW, ESP32 Core 3.3.10
    Hub now runs on EoRa-S3-900TB (ESP32-S3 + onboard SX1262) -- same board
    family as the outside sensor node.
