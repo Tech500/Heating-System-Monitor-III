@@ -40,7 +40,7 @@ A complete scheduled receive cycle:
 
 ---
 
-## 4. EoRaS3900TB Full Wake + Radio Activity Cycle (ESP32S3 + SX1262)
+## 4. EoRaS3900TB Full Wake + Radio Activity Cycle (ESP32S3 + SX1262)   
 
 This is the node’s full active period:
 
