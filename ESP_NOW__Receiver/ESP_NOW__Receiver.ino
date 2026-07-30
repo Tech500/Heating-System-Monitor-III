@@ -1,41 +1,11 @@
 /* Heating System Monitor IV
    ESP_NOW_Receiver.ino with temperature Offset + LoRa WOR trigger
-   July 19, 2026 (LoRa merge)
+   July 30, 2026 (LoRa merge)
    ESP32-NOW, ESP32 Core 3.3.10
    Hub now runs on EoRa-S3-900TB (ESP32-S3 + onboard SX1262) -- same board
-   family as the outside sensor node.
-
-   Receives MSG_BLOWER_STATE from ESP_NOW_Blower node
-   Receives MSG_BME280 from ESP_NOW_BME280 node (outside node's ESP-NOW reply)
-   Sends LoRa WOR to wake the outside node (replaces the old ESP-NOW
-   sendAlert()/delay(1000) poll, which only worked because that node used
-   to be always-on and already listening).
-
-   *** HARDWARE CONFLICT -- MUST RESOLVE BEFORE FLASHING ***
-   Inside BME280 I2C is currently defined SDA=4, SCL=5. The EoRa-S3-900TB's
-   onboard SX1262 has RADIO_SCLK_PIN fixed at GPIO5 (see pin block below).
-   GPIO5 cannot be both the LoRa radio's SCLK and the inside BME280's I2C
-   clock. Reassign SCL (and confirm SDA is actually free too) to pins that
-   are genuinely unused by the radio/OLED/SD on your board -- check the
-   EoRa Pi user manual pinout. Placeholder pins below are marked TODO and
-   will NOT work as-is.
-
-   --- Prior update history preserved from original file ---
-   (BME280I2C library, HW-394 3.3V rail fix, hypsometric sea-level pressure,
-   alertFlag OFF-transition gating, NAN/"Offline" freshness handling,
-   cycle-tracking / coast-time study -- all unchanged, see inline comments.)
-
-   --- LoRa merge, July 19, 2026 ---
-   Hub's LoRa radio is TRANSMIT-ONLY -- it never listens over LoRa. The
-   outside node is the one sitting in startReceiveDutyCycleAuto(); the
-   hub only needs to wake its own sleeping radio (implicit SPI wake) and
-   fire a WOR packet, then go straight back to radio.sleep(). The outside
-   node's actual sensor reply comes back over ESP-NOW (MSG_BME280), same
-   as before -- only the trigger mechanism changed, not the reply path.
-   Link params (SF7 / BW500 / 2dBm) optimized for the real ~20ft link,
-   MUST MATCH the outside node's radio.begin() exactly.
-*/
-
+   as the outside sensor node.
+ */
+   
 #include <Arduino.h>
 #include <Wire.h>
 #include <BME280I2C.h>
@@ -95,30 +65,9 @@ const String googleURL          = "https://script.google.com/macros/s/" + google
 // ─────────────────────────────────────────────
 BME280I2C bmeInside;
 
-// I2C for inside BME280 -- explicit Wire.begin() on documented general-
-// purpose header pins. GPIO17/18 (initBoard()'s I2C_SDA/I2C_SCL) are NOT
-// on the main header per the pin mapping doc -- likely dedicated OLED
-// connector pads, not reachable for external sensor wiring. GPIO42/41
-// are confirmed general I/O, no radio/SD/strapping/RTC-wake conflicts.
-// I2C for inside BME280 -- explicit setPins()/begin() on GPIO48/47.
-// CONFIRMED WORKING via standalone BME280I2C test sketch: stable,
-// consistent readings across many consecutive loops, no flicker.
-// GPIO42/41 and GPIO40/39 were both intermittent on this board despite
-// being valid, documented general-purpose pins.
 #define BME_SDA 48
 #define BME_SCL 47
 
-// ─────────────────────────────────────────────
-// BME280 (Outside) Temperature Calibration
-// NOTE: offset includes steady-state self-heating of current
-// always-on DevKit node. RE-CALIBRATE after EoRa deep-sleep
-// migration -- self-heating term will largely disappear.
-// ─────────────────────────────────────────────
-
-// ─────────────────────────────────────────────
-// BME280 (Inside) Temperature Calibration
-// Offset applied to BME280 (inside) temperature output
-// ─────────────────────────────────────────────
 const float BME280_INSIDE_TEMP_CAL_OFFSET_F = + .90;
 
 // ─── NTP / Time ──────────────────────────────────────────────────────────────
@@ -319,14 +268,22 @@ void setupLoRa() {
 // wakes the outside node's ESP32 via DIO1 -> EXT0. Outside node's actual
 // sensor reply still comes back over ESP-NOW (MSG_BME280), unchanged.
 void sendOutsideWakeRequest() {
-  Serial.println("[LoRa] Waking radio and sending WOR to outside BME280 node...");
+  // 1. Set matching 4096-symbol preamble (~1.05 seconds long)
+  radio.setPreambleLength(4096); 
+
+  Serial.println(F("[LoRa] Sending long-preamble WOR trigger to outside BME280 node..."));
+
+  // 2. Directly pass the "WOR" string to transmit
   int state = radio.transmit("WOR");
+
   if (state == RADIOLIB_ERR_NONE) {
-    Serial.println("[LoRa] WOR sent OK");
+    Serial.println(F("[LoRa] WOR sent OK"));
   } else {
     Serial.printf("[LoRa] WOR send failed, code %d\n", state);
   }
-  radio.standby();  // back to idle -- no LoRa listening needed on this node
+
+  // 3. Put Hub radio back in standby (idle)
+  radio.standby();
 }
 
 // ─── NTP Init ────────────────────────────────────────────────────────────────
