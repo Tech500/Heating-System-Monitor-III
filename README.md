@@ -110,7 +110,7 @@ long, lazy cycles — the efficient operating point — instead of frequent shor
 
 ---
 
-**Note:** Two EBYTE EoRa-S3-900TB boards are required (Receiver + Outside Node) to achieve
+**Note:** Two EBYTE EoRa-S3-900TB boards are required (Receiver + Outside Nodes) to achieve
 the microamp power results.<br>
 [EoRa-S3-900TB — available from EbyteIoT.com](https://ebyteiot.com/products/ebyte-oem-odm-eora-s3-900tb-22dbm-7km-mini-low-power-and-long-distance-sx1262-rf-module-lora-module-915mhz?_pos=1&_sid=af52219e9&_ss=r)
 
