@@ -12,10 +12,10 @@ The node is fully asleep:
 - SX1262 in sleep  
 - All peripherals off  
 
-[Project Average Current](https://github.com/Tech500/Heating-System-Monitor-IV/blob/main/Images/Project%20Aveage%20Current.png))
+[Project Average Current](https://github.com/Tech500/Heating-System-Monitor-IV/blob/main/Images/Project%20Aveage%20Current.png)
 ---
 
-## 2. SX1262 Auto Duty Cycle RX Window (~14 mA Peak)
+## 2. SX1262 Auto Duty Cycle RX Window (5000 Symbols)
 
 Captured during `radio.startReceiveDutyCycleAuto()`:
 
@@ -23,7 +23,7 @@ Captured during `radio.startReceiveDutyCycleAuto()`:
 - RX window opens  
 - Radio returns to sleep  
 
-[Auto RX Window](https://github.com/Tech500/Heating-System-Monitor-IV/blob/main/IMAGES/PPK2%20Observation-02.png)
+[Sleep Deep Duration](https://github.com/Tech500/Heating-System-Monitor-IV/blob/main/Images/Sleep%20Duration.png)
 
 ---
 
@@ -36,8 +36,7 @@ A complete scheduled receive cycle:
 - SX1262 performs RX window  
 - Node returns to baseline  
 
-[Duty Cycle Sequence](https://github.com/Tech500/Heating-System-Monitor-IV/blob/main/IMAGES/PPK2%20Observation-03.png)
-
+[WOR Spike and Deep Sleep](https://github.com/Tech500/Heating-System-Monitor-IV/blob/main/Images/WOR%20Spike%20and%20Deep%20Sleep.png)
 ---
 
 ## 4. EoRa-S3-900TB Full Wake + Radio Activity Cycle (ESP32S3 + SX1262)   
@@ -52,7 +51,7 @@ This is the node’s full active period:
 Peak ≈ 98 mA  
 Average ≈ 25–26 mA  
 
-[Full Wake Cycle](https://github.com/Tech500/Heating-System-Monitor-IV/blob/main/IMAGES/PPK2%20Observation-04.png)
+[WOR Spike Duration](https://github.com/Tech500/Heating-System-Monitor-IV/blob/main/Images/WOR%20Spike%20Duration.png)
 
 ---
 
