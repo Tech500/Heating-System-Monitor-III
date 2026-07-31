@@ -137,7 +137,7 @@ current while maintaining reliable LoRa wake capability.
 | Average current (full cycle)             | ~50 µA            |
 | Projected battery life (3000 mAh LiPo)   | **~80+ months**   |
 
-PPK2 capture screenshots and raw observations: [PPK2 Observations](images/) *(placeholder — populate `images/` folder with captures)*
+PPK2 capture screenshots and raw observations: [Nordic Power Profiler Kit 2 Observations](https://github.com/Tech500/Heating-System-Monitor-IV/blob/main/Nordic%20PPK2%20Power%20Observations.md)
 
 
 
