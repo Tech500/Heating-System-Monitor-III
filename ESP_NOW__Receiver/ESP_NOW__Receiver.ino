@@ -268,8 +268,8 @@ void setupLoRa() {
 // wakes the outside node's ESP32 via DIO1 -> EXT0. Outside node's actual
 // sensor reply still comes back over ESP-NOW (MSG_BME280), unchanged.
 void sendOutsideWakeRequest() {
-  // 1. Set matching 4096-symbol preamble (~1.05 seconds long)
-  radio.setPreambleLength(4096); 
+  // 1. Set matching 5000-symbol preamble (~1.05 seconds long)
+  radio.setPreambleLength(5000); 
 
   Serial.println(F("[LoRa] Sending long-preamble WOR trigger to outside BME280 node..."));
 
