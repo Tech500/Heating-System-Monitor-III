@@ -108,6 +108,8 @@ long, lazy cycles — the efficient operating point — instead of frequent shor
 - NVS persistence of daily total across power cycles
 - Communicates to the receiver via ESP-NOW
 
+*** Two, Ebyte, EoRa-S3-900TB required to achieve similar Outside node microamp results. ***
+[EoRa-S3-900TB Available from EbyteIoT.com](https://ebyteiot.com/products/ebyte-oem-odm-eora-s3-900tb-22dbm-7km-mini-low-power-and-long-distance-sx1262-rf-module-lora-module-915mhz?_pos=1&_sid=af52219e9&_ss=r)
 ---
 
 ## Power Optimization (Outside Node)
