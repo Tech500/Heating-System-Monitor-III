@@ -5,7 +5,7 @@ Each image shows a different operating mode of the ESP32‑S3 + SX1262 system.
 
 ---
 
-## 1. ESP32S3 + SX1262 DeepSleep Baseline Current
+## 1. ESP32S3 + SX1262 Project Average Current
 
 The node is fully asleep:  
 - ESP32‑S3 in deep sleep  
@@ -15,20 +15,19 @@ The node is fully asleep:
 [Project Average Current](https://github.com/Tech500/Heating-System-Monitor-IV/blob/main/Images/Project%20Aveage%20Current.png)
 ---
 
-## 2. SX1262 Auto Duty Cycle RX Window (5000 Symbols)
+## 2. SX1262 One complete Auto Duty Cycle RX Window (5000 Symbols)
 
-Captured during `radio.startReceiveDutyCycleAuto()`:
+Deep Sleep Duration captured during `radio.startReceiveDutyCycleAuto()`:
 
 - SX1262 wakes  
 - RX window opens  
 - Radio returns to sleep  
 
-[Sleep Deep Duration](https://github.com/Tech500/Heating-System-Monitor-IV/blob/main/Images/Sleep%20Duration.png)
+[Deep Sleep Duration](https://github.com/Tech500/Heating-System-Monitor-IV/blob/main/Images/Sleep%20Duration.png)
 
 ---
 
-## 3. Full Receive Duty Cycle Sequence  
-**Sleep → Auto RX Window → Sleep**
+## 3. WOR Spike and Deep Sleep
 
 A complete scheduled receive cycle:
 
@@ -39,7 +38,7 @@ A complete scheduled receive cycle:
 [WOR Spike and Deep Sleep](https://github.com/Tech500/Heating-System-Monitor-IV/blob/main/Images/WOR%20Spike%20and%20Deep%20Sleep.png)
 ---
 
-## 4. EoRa-S3-900TB Full Wake + Radio Activity Cycle (ESP32S3 + SX1262)   
+## 4. EoRa-S3-900TB WOR Spike Duration )   
 
 This is the node’s full active period:
 
