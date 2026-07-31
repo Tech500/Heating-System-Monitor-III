@@ -139,6 +139,10 @@ current while maintaining reliable LoRa wake capability.
 
 PPK2 capture screenshots and raw observations: [PPK2 Observations](images/) *(placeholder — populate `images/` folder with captures)*
 
+
+
+PPK2 Images are re-derive the baseline number from a stopped/static capture with an explicit SELECTION over a clean deep-sleep-only stretch (excluding WOR spikes), so it's apples-to-apples with the others.
+
 ---
 
 ## ESP-NOW Configuration (Blower Node ↔ Receiver)
