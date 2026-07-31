@@ -1,6 +1,6 @@
 # Outside Node – Nordic Power Profiler Kit 2 Measurements
 
-This page documents the four PPK2 captures taken from the EoRa‑S3‑900TB outside node.  
+This page documents the four PPK2 captures taken from the EoRa‑S3‑900TB outside node.   
 Each image shows a different operating mode of the ESP32‑S3 + SX1262 system.
 
 ---
