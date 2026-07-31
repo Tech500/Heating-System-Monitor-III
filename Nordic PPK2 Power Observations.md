@@ -12,7 +12,7 @@ The node is fully asleep:
 - SX1262 in sleep  
 - All peripherals off  
 
-[Images](\Images\Project Aveage Current.png)
+[Project Average Current]([\Images\Project Aveage Current.png](https://github.com/Tech500/Heating-System-Monitor-IV/blob/main/Images/Project%20Aveage%20Current.png))
 ---
 
 ## 2. SX1262 Auto Duty Cycle RX Window (~14 mA Peak)
