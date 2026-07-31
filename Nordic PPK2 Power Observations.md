@@ -5,14 +5,14 @@ Each image shows a different operating mode of the ESP32‑S3 + SX1262 system.
 
 ---
 
-## 1. ESP32S3 + SX1262 DeepSleep Baseline (14.59 µA)
+## 1. ESP32S3 + SX1262 DeepSleep Baseline Current
 
 The node is fully asleep:  
 - ESP32‑S3 in deep sleep  
 - SX1262 in sleep  
 - All peripherals off  
 
-[Project Average Current]([\Images\Project Aveage Current.png](https://github.com/Tech500/Heating-System-Monitor-IV/blob/main/Images/Project%20Aveage%20Current.png))
+[Project Average Current](https://github.com/Tech500/Heating-System-Monitor-IV/blob/main/Images/Project%20Aveage%20Current.png))
 ---
 
 ## 2. SX1262 Auto Duty Cycle RX Window (~14 mA Peak)
