@@ -60,6 +60,8 @@ Average ≈ 25–26 mA
 - All captures taken at 100 ksps  
 - PPK2 connected in Ampere Mode to the EoRa‑S3‑900TB, in series with LiPo battery and Development Board, JST Battery connector.  
 - These measurements demonstrate real, reproducible behavior for the open‑source community
+- Sleep single duration happens multiple times during the time in Deep Sleep between LoRa WOR.  Trigger time is unknown; event driven, depends on how long blower runs
+before cycling to OFF.
 - Grey shaded area are the vaues of interest.
 - PPK2 Images are re-derive the baseline number from a stopped/static capture with an explicit SELECTION over a clean deep-sleep-only stretch (excluding WOR spikes), so it's apples-to-apples with the others.
 
