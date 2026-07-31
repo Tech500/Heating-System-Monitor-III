@@ -112,6 +112,7 @@ long, lazy cycles — the efficient operating point — instead of frequent shor
 
 **Note:** Two EBYTE EoRa-S3-900TB boards are required (Receiver + Outside Nodes) to achieve
 the microamp power results.<br>
+[EoRa-S3-900TB Product Downloads](https://www.cdebyte.com/products/EoRa-S3-900TB/4#Downloads) <br>
 [Product Manual](https://www.cdebyte.com/pdf-down.aspx?id=3538)  Needed for Physical pin number to GPIO number --Not a common ESP32-S3, only 26 pins! <br>
 [EoRa-S3-900TB — available from EbyteIoT.com](https://ebyteiot.com/products/ebyte-oem-odm-eora-s3-900tb-22dbm-7km-mini-low-power-and-long-distance-sx1262-rf-module-lora-module-915mhz?_pos=1&_sid=af52219e9&_ss=r)  Regulated by Frequency;  Be sure to order for Frequency assigned to your area.  Best to inquire with EbyteIot.com before ordering.
 
