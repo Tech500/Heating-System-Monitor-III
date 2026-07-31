@@ -241,7 +241,7 @@ reported in inHg. The pressure difference is absolute (both sensors at the same 
 
 ## Dependencies
 
-- Arduino ESP32 Core 3.3.10   --No exceptions --code required for ESP-NOW and perihelial shutdowns. 
+- Arduino ESP32 Core 3.3.10   --No exceptions --code required for ESP-NOW and periherial shutdowns. 
 - RadioLib (SX1262 LoRa)
 - EBYTE `boards.h` / `utilities.h` (EoRa-S3-900TB board support — included directly in the
   `ESP_NOW_BME280/` sketch folder, not a separately installed library)
