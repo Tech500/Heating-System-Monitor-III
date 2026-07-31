@@ -12,7 +12,7 @@ The node is fully asleep:
 - SX1262 in sleep  
 - All peripherals off  
 
-![Project Average Current](\Imge\Project Average Current)
+![Project Average Current](\Images\Project Average Current)
 ---
 
 ## 2. SX1262 Auto Duty Cycle RX Window (~14 mA Peak)
