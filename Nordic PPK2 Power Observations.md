@@ -15,13 +15,16 @@ The node is fully asleep:
 
 ---
 
-## 2. SX1262 One complete Auto Duty Cycle RX Window (5000 Symbols)
+## 2. SX1262 One Complete Auto Duty Cycle RX Window (5000 Symbols)
 
-Deep Sleep Duration captured during `radio.startReceiveDutyCycleAuto()`:
+Captured during `radio.startReceiveDutyCycleAuto()`:
 
 - SX1262 wakes
 - RX window opens
 - Radio returns to sleep
+
+Selection (49.36 µA avg, 1.041 s, 51.42 µC) isolates just the sleep-floor
+between RX windows — excludes the wake/RX spike.
 
 [Deep Sleep Duration](Images/Sleep%20Duration.png)
 
