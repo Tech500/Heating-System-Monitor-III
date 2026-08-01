@@ -233,10 +233,6 @@ reported in inHg. The pressure difference is absolute (both sensors at the same 
 | `Code.gs`                     | Google Apps Script for Sheets logging   |
 | `Heat System Monitor III.mp4` | Project demonstration video, download   |
 
-> **Note:** `ESP_NOW_BME280/` folder name is a holdover from earlier ESP-NOW-based outside
-> node hardware; the node itself now runs on EoRa-S3-900TB over LoRa. Consider renaming to
-> reflect the current architecture (e.g. `Outside_Node_LoRa/`) at your convenience.
-
 ---
 
 ## Dependencies
