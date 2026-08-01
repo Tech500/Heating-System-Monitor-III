@@ -22,6 +22,7 @@ Captured during `radio.startReceiveDutyCycleAuto()`:
 - SX1262 wakes
 - RX window opens
 - Radio returns to sleep
+- Ebyte, EoRa-S3-900TB Deep Sleeps ~ 99.9% of time
 
 Selection (49.36 µA avg, 1.041 s, 51.42 µC) isolates just the sleep-floor
 between RX windows — excludes the wake/RX spike.
