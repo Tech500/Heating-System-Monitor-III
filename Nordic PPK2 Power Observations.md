@@ -26,7 +26,7 @@ The node is fully asleep:
 
 
 
-<a href="Images/Project%20Average%20Current.png?raw=true" target="_blank" rel="noopener">
+<a href="https://raw.githubusercontent.com/Tech500/Heating-System-Monitor-IV/main/Images/Project%20Average%20Current.png" target="_blank" rel="noopener">
   <img src="Images/Project%20Average%20Current.png" alt="Project Average Current" width="600">
 </a>
 
@@ -43,7 +43,7 @@ Captured during `radio.startReceiveDutyCycleAuto()`:
 
 Selection (21.74 µA avg, 23.10 µA max, 1.036 s, 22.53 µC) 
 
-<a href="Images/Sleep%20Duration.png?raw=true" target="_blank" rel="noopener">
+<a href="https://raw.githubusercontent.com/Tech500/Heating-System-Monitor-IV/main/Images/Sleep%20Duration.png" target="_blank" rel="noopener">
   <img src="Images/Sleep%20Duration.png" alt="Deep Sleep Duration" width="600">
 </a>
 
@@ -59,7 +59,7 @@ A complete scheduled receive cycle:
 
 Selection (49.36 µa avg, 13.01 ma max, 1.041 s, 51.42 µC)
 
-<a href="Images/WOR%20Spike%20and%20Deep%20Sleep.png?raw=true" target="_blank" rel="noopener">
+<a href="https://raw.githubusercontent.com/Tech500/Heating-System-Monitor-IV/main/Images/WOR%20Spike%20and%20Deep%20Sleep.png" target="_blank" rel="noopener">
   <img src="Images/WOR%20Spike%20and%20Deep%20Sleep.png" alt="WOR Spike and Deep Sleep" width="600">
 </a>
 
@@ -76,6 +76,6 @@ This is the node's full active period:
 
 Selection (8.75 ma avg, 13.57 ma max,  3.270 ms, 28.62 µC)
 
-<a href="Images/WOR%20Spike%20Duration.png?raw=true" target="_blank" rel="noopener">
+<a href="https://raw.githubusercontent.com/Tech500/Heating-System-Monitor-IV/main/Images/WOR%20Spike%20Duration.png" target="_blank" rel="noopener">
   <img src="Images/WOR%20Spike%20Duration.png" alt="WOR Spike Duration" width="600">
 </a>
