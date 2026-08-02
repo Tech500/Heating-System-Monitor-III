@@ -24,6 +24,8 @@ The node is fully asleep:
 - SX1262 in sleep
 - All peripherals off
 
+
+
 <a href="Images/Project%20Average%20Current.png" target="_blank" rel="noopener">
   <img src="Images/Project%20Average%20Current.png" alt="Project Average Current" width="600">
 </a>
@@ -39,8 +41,7 @@ Captured during `radio.startReceiveDutyCycleAuto()`:
 - Radio returns to sleep
 - Ebyte, EoRa-S3-900TB Deep Sleeps ~ 99.9% of time
 
-Selection (49.36 µA avg, 1.041 s, 51.42 µC) isolates just the sleep-floor
-between RX windows — excludes the wake/RX spike.
+Selection (21.74 µA avg, 23.10 µA, 1.036 s, 22.53 µC) 
 
 <a href="Images/Sleep%20Duration.png" target="_blank" rel="noopener">
   <img src="Images/Sleep%20Duration.png" alt="Deep Sleep Duration" width="600">
@@ -55,6 +56,8 @@ A complete scheduled receive cycle:
 - ESP32‑S3 wakes
 - SX1262 performs RX window
 - Node returns to baseline
+
+Selection (49.36 µa avg, 13.01 ma max, 1.041 s, 51.42 µC)
 
 <a href="Images/WOR%20Spike%20and%20Deep%20Sleep.png" target="_blank" rel="noopener">
   <img src="Images/WOR%20Spike%20and%20Deep%20Sleep.png" alt="WOR Spike and Deep Sleep" width="600">
