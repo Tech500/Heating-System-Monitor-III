@@ -41,7 +41,7 @@ Captured during `radio.startReceiveDutyCycleAuto()`:
 - Radio returns to sleep
 - Ebyte, EoRa-S3-900TB Deep Sleeps ~ 99.9% of time
 
-Selection (21.74 µA avg, 23.10 µA, 1.036 s, 22.53 µC) 
+Selection (21.74 µA avg, 23.10 µA max, 1.036 s, 22.53 µC) 
 
 <a href="Images/Sleep%20Duration.png" target="_blank" rel="noopener">
   <img src="Images/Sleep%20Duration.png" alt="Deep Sleep Duration" width="600">
