@@ -71,8 +71,7 @@ This is the node's full active period:
 - Peripherals/LDOs active
 - Return to deep sleep
 
-Peak ≈ 98 mA
-Average ≈ 25–26 mA
+Selection (8.75 ma avg, 13.57 ma max,  3.270 ms, 28.62 µC)
 
 <a href="Images/WOR%20Spike%20Duration.png" target="_blank" rel="noopener">
   <img src="Images/WOR%20Spike%20Duration.png" alt="WOR Spike Duration" width="600">
