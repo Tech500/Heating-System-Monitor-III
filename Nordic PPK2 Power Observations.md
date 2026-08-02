@@ -21,7 +21,7 @@ Each image shows a different operating mode of the ESP32‑S3 + SX1262 system.
 The node is fully asleep:
 
 - ESP32‑S3 in deep sleep
-- SX1262 in sleep
+- SX1262 in Auto Duty Cycle
 - All peripherals off
 
 
