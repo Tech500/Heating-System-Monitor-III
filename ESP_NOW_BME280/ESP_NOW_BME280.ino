@@ -9,8 +9,8 @@
 
 /*
       SX1262 with Channel Activity Detection-Wake-on-Radio-Deep Sleep
-      CAD_WOR_Deep_Sleep.ino
-      Updated for ESP32 Arduino Core v3.x
+      ESP_NOW_BME280
+      Updated for ESP32 Arduino Core v3.3.10 Reuired!!!
 */
 
 #define EoRa_PI_V1
