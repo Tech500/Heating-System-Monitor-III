@@ -1,7 +1,7 @@
 /* Heating System Monitor IV
    ESP_NOW_Receiver.ino with temperature Offset + LoRa WOR trigger
-   July 30, 2026 (LoRa merge)
-   ESP32-NOW, ESP32 Core 3.3.10
+  August 5, 2026 (LoRa merge)
+   ESP32-NOW, ESP32 Core 3.3.10  //Required!!!
    Hub now runs on EoRa-S3-900TB (ESP32-S3 + onboard SX1262) -- same board
    as the outside sensor node.
  */
@@ -59,15 +59,38 @@ bool powerOnReset = false;
 const String googleDeploymentID = "Removed for security";
 const String googleURL          = "https://script.google.com/macros/s/" + googleDeploymentID + "/exec";
 
+#define TEST_BUTTON_PIN 16   // 3-wire module: VCC, GND, signal -- idles LOW, HIGH on press
+
 // ─────────────────────────────────────────────
 // BME280 (Inside) — replaces MCP9808
 // Default I2C address 0x76, same library as outside BME280 node
 // ─────────────────────────────────────────────
 BME280I2C bmeInside;
 
+// I2C for inside BME280 -- explicit Wire.begin() on documented general-
+// purpose header pins. GPIO17/18 (initBoard()'s I2C_SDA/I2C_SCL) are NOT
+// on the main header per the pin mapping doc -- likely dedicated OLED
+// connector pads, not reachable for external sensor wiring. GPIO42/41
+// are confirmed general I/O, no radio/SD/strapping/RTC-wake conflicts.
+// I2C for inside BME280 -- explicit setPins()/begin() on GPIO48/47.
+// CONFIRMED WORKING via standalone BME280I2C test sketch: stable,
+// consistent readings across many consecutive loops, no flicker.
+// GPIO42/41 and GPIO40/39 were both intermittent on this board despite
+// being valid, documented general-purpose pins.
 #define BME_SDA 48
 #define BME_SCL 47
 
+// ─────────────────────────────────────────────
+// BME280 (Outside) Temperature Calibration
+// NOTE: offset includes steady-state self-heating of current
+// always-on DevKit node. RE-CALIBRATE after EoRa deep-sleep
+// migration -- self-heating term will largely disappear.
+// ─────────────────────────────────────────────
+
+// ─────────────────────────────────────────────
+// BME280 (Inside) Temperature Calibration
+// Offset applied to BME280 (inside) temperature output
+// ─────────────────────────────────────────────
 const float BME280_INSIDE_TEMP_CAL_OFFSET_F = + .90;
 
 // ─── NTP / Time ──────────────────────────────────────────────────────────────
@@ -240,35 +263,42 @@ void sendOutsideWakeRequest();
 // radio (implicit on any SPI transaction) and fire a WOR packet, then
 // return to radio.sleep(). Link params MUST MATCH the outside node exactly.
 void setupLoRa() {
-  // initBoard() (Ebyte's boards.h) intentionally NOT called -- see note
-  // above the pin defines. SPI needs to be brought up manually in its
-  // place, same pins initBoard() would have used.
-  SPI.begin(RADIO_SCLK_PIN, RADIO_MISO_PIN, RADIO_MOSI_PIN);
-  delay(1500);
+  SPI.begin(RADIO_SCLK_PIN, RADIO_MISO_PIN, RADIO_MOSI_PIN, RADIO_CS_PIN);
 
-  Serial.print(F("[SX126x] Initializing ... "));
+  radio.standby();
+  delay(50);
+
+  radio.resetOnStartup = true;
+  delay(50);
+  radio.tcxoVoltage = 1.6; // Crucial 1.6V reference for Ebyte modules
+
   int state = radio.begin(
-    radioFreq, 500.0, 7, 7,
+    radioFreq,
+    125.0,
+    7,
+    7,
     RADIOLIB_SX126X_SYNC_WORD_PRIVATE,
-    8, 512, 0.0, true
+    2,
+    5000, // 5000-symbol preamble
+    1.6,
+    false
   );
-  if (state == RADIOLIB_ERR_NONE) {
-    Serial.println(F("success!"));
-  } else {
-    Serial.print(F("failed, code "));
-    Serial.println(state);
-  }
 
-  radio.standby();  // idle here between events -- hub is mains-powered so
-                   // this isn't about battery life, just a clean resting
-                   // state; SPI wakes it automatically on the next call.
+  if (state == RADIOLIB_ERR_NONE) {
+    radio.setRegulatorDCDC();
+    radio.setPreambleLength(5000); 
+    Serial.println(F("[SX1262] Battery Receiver Initialized with 5000-symbol Preamble."));
+  } else {
+    Serial.printf("[SX1262] Initialization failed, code %d\n", state);
+  }
 }
+
 
 // Wake the sleeping radio (implicit via SPI) and transmit the WOR that
 // wakes the outside node's ESP32 via DIO1 -> EXT0. Outside node's actual
 // sensor reply still comes back over ESP-NOW (MSG_BME280), unchanged.
 void sendOutsideWakeRequest() {
-  // 1. Set matching 5000-symbol preamble (~1.05 seconds long)
+  // 1. Set matching 4096-symbol preamble (~1.05 seconds long)
   radio.setPreambleLength(5000); 
 
   Serial.println(F("[LoRa] Sending long-preamble WOR trigger to outside BME280 node..."));
@@ -467,6 +497,8 @@ void setup() {
   Serial.println("\n\nHeating System Monitor IV - ESP_NOW_Receiver + LoRa WOR\n");
   Serial.println("Build: " __DATE__ " " __TIME__ "\n");
 
+  pinMode(TEST_BUTTON_PIN, INPUT_PULLDOWN);
+
   pinMode(WRITE_LED_PIN, OUTPUT);
   digitalWrite(WRITE_LED_PIN, LOW);
 
@@ -545,6 +577,29 @@ void setup() {
 
 // ─── Loop State Machine ───────────────────────────────────────────────────────
 void loop() {
+
+// Button test -- debounced edge detection, fires once per confirmed press
+  static bool lastRawState = LOW;     // raw pin reading, used only to catch when it starts changing
+  static bool stableState  = LOW;     // confirmed/debounced state
+  static unsigned long lastChangeMs = 0;
+  const unsigned long debounceMs = 50;
+
+  bool raw = digitalRead(TEST_BUTTON_PIN);
+  if (raw != lastRawState) {
+    lastChangeMs = millis();
+    lastRawState = raw;
+  }
+
+  if ((millis() - lastChangeMs) > debounceMs) {
+    if (raw != stableState) {
+      stableState = raw;
+      if (stableState == HIGH) {
+        Serial.println("[TEST] Manual button press -- forcing alertFlag cycle");
+        alertFlag = true;
+      }
+    }
+  }
+
   ftpSrv.handleFTP();
 
   unsigned long currentMillis = millis();
