@@ -1,6 +1,6 @@
 /*
-  EoRa Pi -- Outside BME280 Sensor Node (Optimized for Core 3.3.10)
-  ESP32-NOW, ESP32 Core 3.3.10 / ESP32-S3
+  EoRa-S#-900TB (EoRa Pi) -- Outside BME280 Sensor Node (Optimized for Core 3.3.10)
+  ESP32-NOW, ESP32 Core 3.3.10 / ESP32-S3, SX1262
   Changed from Autoduty Cycle to Channel Activity Detection (CAD)
   for lower average current draw .
   CAD, Nordic Power Profiler Kit II Observations:  https://gist.github.com/Tech500/26b9f16bd595f98c8c41618e758c92f0
@@ -25,13 +25,20 @@
 #include <SPI.h>
 #include "driver/rtc_io.h"
 
+//Pin Configuration
+//Using EByte's configuration files "boards.h" and "utilities.h"
+//placed in sketch folder.
+
 // --- Hardware & Network Definitions ---
 #define WAKEUP_PIN GPIO_NUM_16
+
 #define HUB_WIFI_CHANNEL 11
+
 #define BME_SDA 48
 #define BME_SCL 47
 
 const float BME280_OUTSIDE_TEMP_CAL_OFFSET_F = +5.54;
+
 uint8_t hubMAC[] = { 0x1C, 0xDB, 0xD4, 0x85, 0x6E, 0x9C };
 
 const float radioFreq = 915.0;     // MHz
