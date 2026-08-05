@@ -2,8 +2,8 @@
   EoRa Pi -- Outside BME280 Sensor Node (Optimized for Core 3.3.10)
   ESP32-NOW, ESP32 Core 3.3.10 / ESP32-S3
   Changed from Autoduty Cycle to Channel Activity Detection (CAD)
-  for lower current draw average.
-  [CAD Nordic Power Profiler Kit II Observations[(https://gist.github.com/Tech500/26b9f16bd595f98c8c41618e758c92f0)
+  for lower average current draw .
+  [CAD Nordic Power Profiler Kit II Observations](https://gist.github.com/Tech500/26b9f16bd595f98c8c41618e758c92f0)
   July 30, 2026
 */
 
