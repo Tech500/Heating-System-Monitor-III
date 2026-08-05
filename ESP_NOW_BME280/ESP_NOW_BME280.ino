@@ -1,43 +1,55 @@
 /*
   EoRa Pi -- Outside BME280 Sensor Node (Optimized for Core 3.3.10)
   ESP32-NOW, ESP32 Core 3.3.10 / ESP32-S3
+  Changed from Autoduty Cycle to Channel Activity Detection (CAD)
+  for lower current draw average.
+  [CAD Nordic Power Profiler Kit II Observations[(https://gist.github.com/Tech500/26b9f16bd595f98c8c41618e758c92f0)
   July 30, 2026
 */
 
+/*
+      SX1262 with Channel Activity Detection-Wake-on-Radio-Deep Sleep
+      CAD_WOR_Deep_Sleep.ino
+      Updated for ESP32 Arduino Core v3.x
+*/
+
 #define EoRa_PI_V1
-#include "boards.h"     // Ebyte pin mappings and power rails
-#include "utilities.h"  // Board helper functions
-#include <RadioLib.h>
+#include <Arduino.h>
 #include <WiFi.h>
-#include <esp_wifi.h>
 #include <ESP32_NOW.h>
+#include <esp_wifi.h>
 #include <Wire.h>
+#include <RadioLib.h>
+#include <boards.h>
 #include <BME280I2C.h>
 #include <SPI.h>
-#include <driver/rtc_io.h>
+#include "driver/rtc_io.h"
 
-// Configuration using OEM definitions from boards.h / utilities.h
-#define WAKE_PIN GPIO_NUM_15  // Physical wire jump from DIO1 to RTC_GPIO15
-
-#define USING_SX1262_868M
-#if defined(USING_SX1262_868M)
-uint8_t txPower = 2;
-float radioFreq = 915.0;
-SX1262 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
-#endif
-
+// --- Hardware & Network Definitions ---
+#define WAKEUP_PIN GPIO_NUM_16
+#define HUB_WIFI_CHANNEL 11
 #define BME_SDA 48
 #define BME_SCL 47
-
-BME280I2C bme;
 
 const float BME280_OUTSIDE_TEMP_CAL_OFFSET_F = +5.54;
 uint8_t hubMAC[] = { 0x1C, 0xDB, 0xD4, 0x85, 0x6E, 0x9C };
 
-#define HUB_WIFI_CHANNEL 11
+const float radioFreq = 915.0;     // MHz
+const float bandWidth = 125.0;     // kHz
+const uint8_t spreadingFactor = 7;
+const uint8_t codingRate = 7;
+const uint8_t syncWord = RADIOLIB_SX126X_SYNC_WORD_PRIVATE;
 
-// ESP-NOW Data Types
-enum MessageType : uint8_t { MSG_BME280 = 0 };
+SX1262 radio = new Module(RADIO_CS_PIN, RADIO_DIO1_PIN, RADIO_RST_PIN, RADIO_BUSY_PIN);
+BME280I2C bme;
+
+// --- Message / Packet Structures ---
+enum MessageType : uint8_t {
+  MSG_BME280       = 0,
+  MSG_ALERT_FLAG   = 1,
+  MSG_BLOWER_STATE = 2
+};
+
 struct __attribute__((packed)) BME280Data {
   MessageType type;
   float temperature;
@@ -45,7 +57,19 @@ struct __attribute__((packed)) BME280Data {
   float pressure;
 };
 
-// Peer class definition with exposed remove_from_system()
+struct __attribute__((packed)) BlowerData {
+  MessageType type;
+  bool         on;
+  float        elapsedMinutes;
+  float        dailyTotalMinutes;
+};
+
+struct __attribute__((packed)) AlertFlag {
+  MessageType type;
+  bool alert;
+};
+
+// --- ESP32 Core v3 ESP-NOW Peer Class ---
 class HubPeer : public ESP_NOW_Peer {
 public:
   HubPeer(const uint8_t *mac_addr, uint8_t channel)
@@ -64,50 +88,99 @@ public:
   }
 };
 
-void goToSleep(void) {
-  Serial.println(F("=== PREPARING FOR DEEP SLEEP ==="));
-  Serial.flush();
-
-  // 1. Arm Radio for Duty Cycle RX (WOR)
-  radio.startReceiveDutyCycleAuto();
-  delay(20);
-
-  // 2. Tear down hardware buses to release driver_ng instances
-  Wire.end();
-  SPI.end();
-
-  // 3. Power-gate peripherals if configured in boards.h
-  #ifdef BOARD_PERIPH_OFF
-    BOARD_PERIPH_OFF(); 
-  #endif
-
-  // 4. Pin isolation & high-impedance mode for non-RTC GPIOs
-  pinMode(RADIO_BUSY_PIN, INPUT);
-  pinMode(BME_SDA, INPUT);
-  pinMode(BME_SCL, INPUT);
-  pinMode(BOARD_LED, INPUT);
-
-  // 5. Setup Wakeup Pin (EXT0)
-  rtc_gpio_pulldown_en(WAKE_PIN);
-  esp_sleep_enable_ext0_wakeup(WAKE_PIN, 1);
-
-  // 6. Enter Deep Sleep
-  esp_deep_sleep_start();
-}
-
 void setupLoRa() {
   SPI.begin(RADIO_SCLK_PIN, RADIO_MISO_PIN, RADIO_MOSI_PIN, RADIO_CS_PIN);
 
-  // Note the last argument explicitly set to 'false' (useRegulatorLDO = false)
+  radio.standby();
+  delay(50);
+
+  radio.resetOnStartup = true;
+  delay(50);
+  radio.tcxoVoltage = 1.6; // Crucial 1.6V reference for Ebyte modules
+
   int state = radio.begin(
-    radioFreq, 500.0, 7, 7,
+    radioFreq,
+    125.0,
+    7,
+    7,
     RADIOLIB_SX126X_SYNC_WORD_PRIVATE,
-    2, 512, 0.0, false); // <--- 'false' enables internal DC-DC converter
+    2,
+    5000, // 5000-symbol preamble
+    1.6,
+    false
+  );
 
   if (state == RADIOLIB_ERR_NONE) {
-    radio.setRegulatorDCDC(); // Explicitly enforce DC-DC buck mode
-    Serial.println(F("[SX126x] Initialized with DC-DC Regulator!"));
+    radio.setRegulatorDCDC();
+    radio.setPreambleLength(5000); 
+    Serial.println(F("[SX1262] Battery Receiver Initialized with 5000-symbol Preamble."));
+  } else {
+    Serial.printf("[SX1262] Initialization failed, code %d\n", state);
   }
+}
+
+bool verifySignalWithBusyLoop(int totalPasses = 10, int requiredHits = 3) {
+  Serial.println(F("\n--- [WAKE DIAGNOSTIC & MULTI-SCAN START] ---"));
+  
+  esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
+  Serial.printf("  Wakeup Cause Code: %d ", wakeup_reason);
+  if (wakeup_reason == ESP_SLEEP_WAKEUP_EXT0) {
+    Serial.println(F("(ESP_SLEEP_WAKEUP_EXT0 - DIO1 High)"));
+  } else {
+    Serial.println(F("(Other Wakeup Reason / Cold Boot)"));
+  }
+
+  int dio1State = digitalRead(WAKEUP_PIN);
+  int busyState = digitalRead(RADIO_BUSY_PIN);
+  Serial.printf("  Pin Levels at Boot -> DIO1 (GPIO %d): %d | BUSY (GPIO %d): %d\n", 
+                RADIO_DIO1_PIN, dio1State, RADIO_BUSY_PIN, busyState);
+
+  uint16_t irqFlags = radio.getIrqFlags();
+  Serial.printf("  SX1262 Internal IRQ Register: 0x%04X\n", irqFlags);
+  if (irqFlags & RADIOLIB_SX126X_IRQ_CAD_DETECTED) {
+    Serial.println(F("  [IRQ CHECK] -> RADIOLIB_SX126X_IRQ_CAD_DETECTED is SET!"));
+  }
+  if (irqFlags & RADIOLIB_SX126X_IRQ_HEADER_VALID) {
+    Serial.println(F("  [IRQ CHECK] -> RADIOLIB_SX126X_IRQ_HEADER_VALID is SET!"));
+  }
+
+  if (wakeup_reason == ESP_SLEEP_WAKEUP_EXT0) {
+    Serial.println("Woke from hub WOR -- reading and sending BME280 data");
+    digitalWrite(BOARD_LED, LED_ON);
+  }  
+
+  return false;
+}
+
+void enterLowPowerWOR() {
+
+  radio.clearIrqFlags(RADIOLIB_SX126X_IRQ_ALL);
+
+  int state = radio.startReceiveDutyCycleAuto(
+      5000,
+      0,
+      RADIOLIB_SX126X_IRQ_PREAMBLE_DETECTED |
+      RADIOLIB_SX126X_IRQ_HEADER_VALID |
+      RADIOLIB_SX126X_IRQ_RX_DONE,
+
+      RADIOLIB_SX126X_IRQ_PREAMBLE_DETECTED |
+      RADIOLIB_SX126X_IRQ_HEADER_VALID |
+      RADIOLIB_SX126X_IRQ_RX_DONE
+  );
+
+  if (state != RADIOLIB_ERR_NONE) {
+    Serial.printf("[SX1262] DutyCycleAuto failed, code: %d\n", state);
+    return;
+  }
+
+  pinMode(WAKEUP_PIN, INPUT);
+  esp_sleep_enable_ext0_wakeup(WAKEUP_PIN, 1);
+
+  Serial.printf("DIO1 GPIO %d before sleep = %d\n", WAKEUP_PIN, digitalRead(WAKEUP_PIN));
+  Serial.println(F("=== SX1262 WOR armed - ESP32-S3 entering deep sleep ==="));
+  Serial.flush();
+
+  esp_deep_sleep_start();
 }
 
 bool sendTelemetryViaESPNOW(float tempF, float humidity, float pressureHPa) {
@@ -122,7 +195,6 @@ bool sendTelemetryViaESPNOW(float tempF, float humidity, float pressureHPa) {
     return false;
   }
 
-  // Local peer instantiation inside valid function scope
   HubPeer localHub(hubMAC, HUB_WIFI_CHANNEL);
   if (!localHub.add_to_system()) {
     Serial.println(F("Failed to bind hub peer"));
@@ -140,7 +212,6 @@ bool sendTelemetryViaESPNOW(float tempF, float humidity, float pressureHPa) {
   bool sent = localHub.sendData((uint8_t *)&pkt, sizeof(BME280Data));
   Serial.printf("[ESP-NOW] Send to hub: %s\n", sent ? "OK" : "FAILED");
 
-  // Clean, explicit driver teardown
   localHub.remove_from_system();
   ESP_NOW.end();
   WiFi.mode(WIFI_OFF);
@@ -154,7 +225,7 @@ bool readAndSendBME280() {
   delay(50);
   Wire.setPins(BME_SDA, BME_SCL);
   if (!Wire.begin(BME_SDA, BME_SCL)) {
-    Serial.println(F("Core 3.3.10 failed to allocate I2C peripheral instance!"));
+    Serial.println(F("Failed to allocate I2C peripheral instance!"));
   }
   delay(50);
 
@@ -184,52 +255,25 @@ bool readAndSendBME280() {
 }
 
 void setup() {
+  initBoard();
+  delay(1500);
+
   Serial.begin(115200);
-  delay(1500); 
+  delay(1500);
 
-  Serial.println(F("*** REACHED SETUP ***"));
-  Serial.flush();
-
-  setCpuFrequencyMhz(80);
-
-  SPI.begin(RADIO_SCLK_PIN, RADIO_MISO_PIN, RADIO_MOSI_PIN, RADIO_CS_PIN);
+  Serial.println(F("\n=============================================="));
+  Serial.println(F("--- ESP32-S3 WOR NODE ---"));
 
   setupLoRa();
+  Serial.println(F("Executing mandatory boot-up radio diagnostic..."));
+  verifySignalWithBusyLoop(10, 3);
+
+  readAndSendBME280();
   delay(50);
 
-  radio.standby();
-  delay(20);
-  radio.setPreambleLength(4096); // Scale preamble window up to ~1.05 seconds 
-  delay(10);
-
-  int state = radio.startReceiveDutyCycleAuto(); 
-
-  if (state == RADIOLIB_ERR_NONE) {
-    Serial.println(F("[LoRa] WOR armed successfully using 512 symbols!"));
-  } else {
-    Serial.printf("[LoRa] WOR critical arming failure: code %d\n", state);
-    Serial.flush();
-    esp_deep_sleep_start();
-  }
-
-  esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
-
-#ifdef BENCH_TEST_FORCE_WAKE
-  Serial.println(F("*** BENCH TEST MODE -- forcing wake/read/send path ***"));
-  goToSleep();
-  return;
-#endif
-
-  if (wakeup_reason == ESP_SLEEP_WAKEUP_EXT0) {
-    Serial.println(F("Woke from hub WOR -- reading and sending BME280 data"));
-    readAndSendBME280();
-    goToSleep();
-  }
-  
-  Serial.println(F("Power-on reset -- arming duty cycle and going to sleep"));
-  goToSleep();
+  enterLowPowerWOR();
 }
 
 void loop() {
-  // System operates purely on reset execution via EXT0 wakeup.
+  // Unused
 }
